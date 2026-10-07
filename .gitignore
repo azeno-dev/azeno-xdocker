@@ -1,0 +1,8 @@
+node_modules/
+dist/
+frontend/*.tsbuildinfo
+# Built UI is generated; keep only the placeholder.
+backend/internal/web/dist/*
+!backend/internal/web/dist/index.html
+.DS_Store
+.playwright-mcp/

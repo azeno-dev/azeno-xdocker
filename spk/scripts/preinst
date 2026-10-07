@@ -1,0 +1,3 @@
+#!/bin/sh
+# Data in ${SYNOPKG_PKGVAR} is kept across upgrades by DSM.
+exit 0

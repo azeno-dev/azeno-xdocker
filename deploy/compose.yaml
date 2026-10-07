@@ -1,0 +1,37 @@
+# xDocker on Synology DSM 7.2+ (Container Manager).
+#
+# Create the folder /volume1/docker/xdocker, put this file in it as
+# compose.yaml and create a Container Manager project from it — or run
+# `docker compose up -d` in that folder over SSH.
+#
+# Then open http://<nas>:8790 (or set up the DSM reverse proxy, README §3).
+services:
+  xdocker:
+    image: ghcr.io/azeno/xdocker:latest
+    # To build on the NAS instead of pulling, use:
+    # build: { context: ../azeno-xdocker, dockerfile: deploy/Dockerfile }
+    container_name: xdocker
+    restart: unless-stopped
+    ports:
+      - "8790:8080"
+    environment:
+      TZ: Europe/Bucharest
+      # Stacks live where Container Manager keeps its projects. The folder
+      # is mounted at the SAME path inside the container, because compose
+      # resolves relative bind mounts (./data) on the client side.
+      XDOCKER_STACKS_DIR: /volume1/docker
+      # Host /proc for the "is this port used on the NAS" check.
+      XDOCKER_HOST_PROC: /host/proc/1
+      # How xDocker reaches registries published on the NAS itself.
+      XDOCKER_HOST_ADDR: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Root-equivalent access to the NAS: see README "Security".
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /volume1/docker/xdocker/data:/data
+      - /volume1/docker:/volume1/docker
+      - /proc:/host/proc:ro
+    labels:
+      # Marks xDocker's own container: it never stops or deletes itself.
+      xdocker.self: "true"

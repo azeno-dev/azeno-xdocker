@@ -1,0 +1,13 @@
+{
+  "port-config": {
+    "protocol-file": "app/xdocker.sc"
+  },
+  "data-share": {
+    "shares": [
+      {
+        "name": "docker",
+        "permission": { "rw": ["xdocker"] }
+      }
+    ]
+  }
+}

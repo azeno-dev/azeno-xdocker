@@ -1,0 +1,27 @@
+[
+  {
+    "step_title": "xDocker setup",
+    "items": [
+      {
+        "type": "textfield",
+        "desc": "Folder that holds your stacks (the same folder Container Manager uses for projects).",
+        "subitems": [
+          {
+            "key": "wizard_stacks_dir",
+            "desc": "Stacks folder",
+            "defaultValue": "/volume1/docker",
+            "validator": { "allowBlank": false, "regex": { "expr": "/^\\/volume[0-9]+\\/.+/", "errorText": "Use a path like /volume1/docker" } }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "step_title": "Docker access",
+    "items": [
+      {
+        "desc": "xDocker runs as the package user <b>sc-xdocker</b>, which cannot open the Docker socket by default. After installing, give it access once (see the README, section 'Native package'): create a <b>docker</b> group, add <b>sc-xdocker</b> to it, and add a boot-up task in Task Scheduler that runs <code>chown root:docker /var/run/docker.sock</code> as root. Until then xDocker shows 'Docker not reachable'."
+      }
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  ".url": {
+    "SYNO.SDS.xdocker": {
+      "type": "url",
+      "title": "xDocker",
+      "desc": "Docker containers, images, stacks and registry",
+      "icon": "images/xdocker_{0}.png",
+      "protocol": "http",
+      "port": "8790",
+      "url": "/",
+      "allUsers": false,
+      "grantPrivilege": "local",
+      "advanceGrantPrivilege": true
+    }
+  }
+}

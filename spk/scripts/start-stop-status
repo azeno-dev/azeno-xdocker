@@ -1,0 +1,62 @@
+#!/bin/sh
+# xDocker service control for DSM 7 (runs as the package user "xdocker").
+
+PKG="xdocker"
+DEST="${SYNOPKG_PKGDEST:-/var/packages/${PKG}/target}"
+VAR="${SYNOPKG_PKGVAR:-/var/packages/${PKG}/var}"
+PID_FILE="${VAR}/${PKG}.pid"
+LOG_FILE="${VAR}/${PKG}.log"
+CONF="${VAR}/config.env"
+
+is_running() {
+    [ -f "${PID_FILE}" ] && kill -0 "$(cat "${PID_FILE}")" 2>/dev/null
+}
+
+start() {
+    is_running && return 0
+    # Defaults, overridden by the install wizard's config.env.
+    XDOCKER_LISTEN=":8790"
+    XDOCKER_DATA_DIR="${VAR}/data"
+    XDOCKER_DOCKER_HOST="unix:///var/run/docker.sock"
+    XDOCKER_DOCKER_BIN="/usr/local/bin/docker"
+    XDOCKER_STACKS_DIR="/volume1/docker"
+    XDOCKER_HOST_PROC="/proc"
+    XDOCKER_HOST_ADDR="localhost"
+    [ -f "${CONF}" ] && . "${CONF}"
+    export XDOCKER_LISTEN XDOCKER_DATA_DIR XDOCKER_DOCKER_HOST XDOCKER_DOCKER_BIN XDOCKER_STACKS_DIR XDOCKER_HOST_PROC XDOCKER_HOST_ADDR
+    export PATH="/usr/local/bin:${PATH}"
+    [ -z "${TZ}" ] && [ -f /etc/TZ ] && export TZ="$(cat /etc/TZ)"
+    mkdir -p "${XDOCKER_DATA_DIR}"
+
+    if [ ! -w /var/run/docker.sock ]; then
+        echo "$(date) warning: ${PKG} cannot write to /var/run/docker.sock; see README 'Native package'" >> "${LOG_FILE}"
+    fi
+    # Keep the log from growing without bound.
+    if [ -f "${LOG_FILE}" ] && [ "$(wc -c < "${LOG_FILE}")" -gt 10485760 ]; then
+        mv -f "${LOG_FILE}" "${LOG_FILE}.1"
+    fi
+    nohup "${DEST}/bin/xdocker" >> "${LOG_FILE}" 2>&1 &
+    echo $! > "${PID_FILE}"
+    sleep 1
+    is_running
+}
+
+stop() {
+    if is_running; then
+        kill "$(cat "${PID_FILE}")"
+        i=0
+        while is_running && [ $i -lt 20 ]; do sleep 1; i=$((i + 1)); done
+        is_running && kill -9 "$(cat "${PID_FILE}")"
+    fi
+    rm -f "${PID_FILE}"
+    return 0
+}
+
+case "$1" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop; start ;;
+    status) is_running && exit 0 || exit 3 ;;
+    log) echo "${LOG_FILE}"; exit 0 ;;
+    *) exit 1 ;;
+esac

@@ -1,0 +1,8 @@
+#!/bin/sh
+# Save the wizard answers for start-stop-status.
+VAR="${SYNOPKG_PKGVAR:-/var/packages/xdocker/var}"
+mkdir -p "${VAR}/data"
+if [ -n "${wizard_stacks_dir}" ]; then
+    printf 'XDOCKER_STACKS_DIR="%s"\n' "${wizard_stacks_dir}" > "${VAR}/config.env"
+fi
+exit 0
